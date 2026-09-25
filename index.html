@@ -25,6 +25,18 @@ html
 html,body{margin:0;padding:0;background:#eef2f7;color:#172033;font-family:Arial,Helvetica,sans-serif}
 body{overflow-x:hidden}
 
+/* PDF Editor Overlay Fix */
+.pdf-editor-container input, .pdf-editor-container .text-box, .editable-text {
+  position: absolute !important;
+  line-height: 1.4 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 2px 4px !important;
+}
+.pdf-canvas { position: relative !important; z-index: 1 !important; }
+.text-layer, .overlay-layer { position: absolute !important; top: 0; left: 0; z-index: 10 !important; }
+.form-row, .input-group { display: flex !important; align-items: center !important; gap: 8px !important; clear: both !important; }
+  
 .header{
  height:64px;background:#fff;border-bottom:1px solid #dbe3ec;
  display:flex;align-items:center;justify-content:space-between;padding:0 18px;
