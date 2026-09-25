@@ -1,22 +1,19 @@
-html
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Raja PDF Editor</title>
+<title>Redwan PDF Editor</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Lateef&family=Noto+Naskh+Arabic:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
 
-<!-- PDF-LIB (PDF Save করার জন্য) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 
-<!-- PDF.JS (PDF ওপেন ও রেন্ডার করার জন্য - এটি আগে মিসিং ছিল) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script>
-  // PDF.js Worker সেটআপ
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 </script>
 
@@ -25,7 +22,6 @@ html
 html,body{margin:0;padding:0;background:#eef2f7;color:#172033;font-family:Arial,Helvetica,sans-serif}
 body{overflow-x:hidden}
 
-/* PDF Editor Overlay Fix */
 .pdf-editor-container input, .pdf-editor-container .text-box, .editable-text {
   position: absolute !important;
   line-height: 1.4 !important;
@@ -197,7 +193,7 @@ select.tool{appearance:auto}
 <body>
 
 <header class="header">
- <div class="logo">Raja <span>PDF Editor</span></div>
+ <div class="logo">Redwan <span>PDF Editor</span></div>
  <div class="status" id="status">Ready</div>
 </header>
 
@@ -316,10 +312,6 @@ select.tool{appearance:auto}
 <div class="notice" id="notice"></div>
 
 <script>
-/* =========================================================
-   STATE
-========================================================= */
-
 const S={
  pdf:null,
  originalBytes:null,
@@ -359,10 +351,6 @@ function clone(obj){
  return JSON.parse(JSON.stringify(obj));
 }
 
-/* =========================================================
-   HISTORY
-========================================================= */
-
 function snapshot(){
  return clone({
   pages:S.pages,
@@ -372,7 +360,7 @@ function snapshot(){
 
 function pushHistory(){
  S.history.push(snapshot());
- if(S.history.length>40) S.history.shift();
+ if(S.history.length>40)S.history.shift();
  S.future=[];
 }
 
@@ -381,10 +369,6 @@ function restoreSnap(snap){
  S.rotation=snap.rotation;
  renderAll();
 }
-
-/* =========================================================
-   FILE
-========================================================= */
 
 $("fileInput").addEventListener("change",async e=>{
  const file=e.target.files[0];
@@ -432,10 +416,6 @@ $("fileInput").addEventListener("change",async e=>{
   toast("PDF could not be opened");
  }
 });
-
-/* =========================================================
-   RENDER
-========================================================= */
 
 async function renderAll(){
 
@@ -616,10 +596,6 @@ async function renderPage(n){
  if(S.edit)holder.classList.add("editing");
 }
 
-/* =========================================================
-   EXISTING TEXT
-========================================================= */
-
 function activateText(el){
 
  if(S.activeText && S.activeText!==el){
@@ -637,7 +613,6 @@ function activateText(el){
  const sel=window.getSelection();
  sel.removeAllRanges();
  sel.addRange(range);
-
 }
 
 function saveExistingText(el){
@@ -672,7 +647,7 @@ function saveExistingText(el){
 function autoSave(){
  try{
   localStorage.setItem(
-   "raja_pdf_editor_state",
+   "redwan_pdf_editor_state",
    JSON.stringify({
     pages:S.pages,
     rotation:S.rotation
@@ -680,10 +655,6 @@ function autoSave(){
   );
  }catch(e){}
 }
-
-/* =========================================================
-   EDIT BUTTON
-========================================================= */
 
 $("editBtn").addEventListener("click",()=>{
 
@@ -710,10 +681,6 @@ $("editBtn").addEventListener("click",()=>{
  }
 });
 
-/* =========================================================
-   FONT / SIZE
-========================================================= */
-
 $("fontSelect").addEventListener("change",()=>{
 
  if(!S.activeText)return;
@@ -736,10 +703,6 @@ $("sizeSelect").addEventListener("change",()=>{
 
  saveExistingText(S.activeText);
 });
-
-/* =========================================================
-   NEW TEXT
-========================================================= */
 
 function createNewText(holder,n,obj){
 
@@ -772,10 +735,6 @@ function createNewText(holder,n,obj){
 
  holder.querySelector(".object-layer").appendChild(el);
 }
-
-/* =========================================================
-   IMAGE
-========================================================= */
 
 $("imageInput").addEventListener("change",async e=>{
 
@@ -834,8 +793,6 @@ function createImage(holder,n,obj){
   if(e.target===handle)return;
 
   selectImage(box);
-
-  const r=holder.getBoundingClientRect();
 
   const sx=e.clientX;
   const sy=e.clientY;
@@ -916,10 +873,6 @@ function selectImage(el){
  S.selectedImage=el;
 }
 
-/* =========================================================
-   DRAWING
-========================================================= */
-
 $("drawBtn").addEventListener("click",()=>{
 
  if(!S.pdf){
@@ -954,7 +907,6 @@ $("drawBtn").addEventListener("click",()=>{
 
   status("Ready");
  }
-
 });
 
 $("penBtn").addEventListener("click",()=>{
@@ -1004,7 +956,6 @@ function setupDrawing(canvas,n){
   pushHistory();
 
   canvas.setPointerCapture(e.pointerId);
-
  });
 
  canvas.addEventListener("pointermove",e=>{
@@ -1017,7 +968,6 @@ function setupDrawing(canvas,n){
    canvas,
    S.pages[n-1].strokes.concat([current])
   );
-
  });
 
  canvas.addEventListener("pointerup",e=>{
@@ -1036,14 +986,12 @@ function setupDrawing(canvas,n){
   );
 
   autoSave();
-
  });
 
  canvas.addEventListener("pointercancel",()=>{
   drawing=false;
   current=null;
  });
-
 }
 
 function redrawStrokes(canvas,strokes){
@@ -1089,15 +1037,10 @@ function redrawStrokes(canvas,strokes){
   }
 
   ctx.stroke();
-
  });
 
  ctx.globalCompositeOperation="source-over";
 }
-
-/* =========================================================
-   UNDO / REDO
-========================================================= */
 
 $("undoBtn").addEventListener("click",()=>{
 
@@ -1137,10 +1080,6 @@ $("redoBtn").addEventListener("click",()=>{
  toast("Redo");
 });
 
-/* =========================================================
-   ROTATE
-========================================================= */
-
 $("rotateBtn").addEventListener("click",()=>{
 
  if(!S.pdf){
@@ -1158,10 +1097,6 @@ $("rotateBtn").addEventListener("click",()=>{
 
  toast("Rotated 90°");
 });
-
-/* =========================================================
-   ZOOM
-========================================================= */
 
 function setZoom(z){
 
@@ -1182,10 +1117,6 @@ $("zoomIn").addEventListener("click",()=>{
 $("zoomOut").addEventListener("click",()=>{
  setZoom(S.zoom-.1);
 });
-
-/* =========================================================
-   KEYBOARD DELETE
-========================================================= */
 
 document.addEventListener("keydown",e=>{
 
@@ -1228,10 +1159,6 @@ document.addEventListener("keydown",e=>{
   }
  }
 });
-
-/* =========================================================
-   SAVE PDF
-========================================================= */
 
 $("saveBtn").addEventListener("click",savePDF);
 
@@ -1324,7 +1251,6 @@ async function savePDF(){
       font:helvetica,
       color:PDFLib.rgb(0,0,0)
      });
-
     }
    }
 
@@ -1382,7 +1308,6 @@ async function savePDF(){
     }catch(err){
 
      console.warn("Image export failed",err);
-
     }
    }
 
@@ -1411,7 +1336,6 @@ async function savePDF(){
      });
     }
    }
-
   }
 
   for(const page of pdfDoc.getPages()){
@@ -1419,7 +1343,6 @@ async function savePDF(){
    page.setRotation(
     PDFLib.degrees(S.rotation)
    );
-
   }
 
   const bytes=await pdfDoc.save({
@@ -1436,7 +1359,7 @@ async function savePDF(){
   const a=document.createElement("a");
 
   a.href=url;
-  a.download="Raja-PDF-Edited.pdf";
+  a.download="Redwan-PDF-Edited.pdf";
 
   document.body.appendChild(a);
   a.click();
@@ -1486,13 +1409,10 @@ function hexRGB(hex){
  };
 }
 
-/* =========================================================
-   START
-========================================================= */
-
 $("penBtn").classList.add("active");
 
 </script>
 
 </body>
 </html>
+```
