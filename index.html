@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +15,8 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
 
 <style>
 *{box-sizing:border-box}
@@ -64,52 +65,57 @@ body{overflow-x:hidden}
 .toolbar{display:flex;align-items:center;gap:7px;width:max-content;min-width:100%;white-space:nowrap}
 
 .tool{
- height:40px;border:0;border-radius:9px;padding:0 13px;
- display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ height:40px;border:0;border-radius:9px;padding:0 8px;
+ display:inline-flex;align-items:center;justify-content:center;gap:6px;
  color:#fff;font-weight:700;font-size:13px;cursor:pointer;flex:none;
- box-shadow:0 2px 6px rgba(15,23,42,.10);transition:.16s
+ box-shadow:0 2px 6px rgba(15,23,42,.10);transition:.16s;
+ width:126px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
+.toolbar select.tool{width:auto}
 .tool:hover{transform:translateY(-1px);filter:brightness(1.05)}
 .tool:active{transform:scale(.97)}
 .tool.active{outline:3px solid rgba(15,23,42,.16)}
 
 .add{background:#16a34a}
-.edit{background:#2563eb}
 .image{background:#9333ea}
-.draw{background:#ea580c}
 .undo{background:#64748b}
 .redo{background:#be123c}
-.rotate{background:#0891b2}
 .fontbox{background:#7c3aed}
 .sizebox{background:#db2777}
-.zoom{background:#334155}
 .save{background:#059669}
 
 select.tool{appearance:auto}
-.font-select{min-width:150px}
-.size-select{min-width:76px}
+.font-select{min-width:126px;max-width:126px;text-overflow:ellipsis;overflow:hidden}
+.size-select{min-width:70px;max-width:70px}
 
-.zoom-value{
- height:40px;min-width:60px;border-radius:9px;background:#0f172a;
- color:#fff;display:inline-flex;align-items:center;justify-content:center;
- font-size:13px;font-weight:700;flex:none
+.zoom-group{
+ height:40px;background:#0f172a;border-radius:20px;
+ display:inline-flex;align-items:center;gap:8px;
+ padding:0 12px;flex:none
 }
-
-.drawing-panel{
- display:none;align-items:center;gap:6px;padding-left:5px
+.zoom-percent{
+ color:#fff;font-size:13px;font-weight:700;
+ min-width:38px;text-align:center
 }
-.drawing-panel.show{display:flex}
-.subtool{
- height:38px;border:0;border-radius:8px;padding:0 10px;
- color:#fff;font-weight:700;cursor:pointer
+.zoom-icon-btn{
+ background:none;border:0;color:#cbd5e1;padding:2px;
+ display:inline-flex;align-items:center;justify-content:center;
+ cursor:pointer;flex:none
 }
-.pen{background:#f97316}
-.eraser{background:#dc2626}
-.draw-size{background:#0d9488}
-.draw-color{
- width:40px;padding:4px;background:#1e293b
+.zoom-icon-btn:hover{color:#fff}
+.zoom-icon-btn svg{width:16px;height:16px}
+.zoom-slider{
+ -webkit-appearance:none;appearance:none;width:110px;height:4px;
+ border-radius:2px;background:#334155;outline:none;flex:none;cursor:pointer
 }
-.draw-color input{width:28px;height:27px;border:0;padding:0;cursor:pointer}
+.zoom-slider::-webkit-slider-thumb{
+ -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+ background:#38bdf8;cursor:pointer;border:2px solid #0f172a
+}
+.zoom-slider::-moz-range-thumb{
+ width:14px;height:14px;border-radius:50%;background:#38bdf8;
+ border:2px solid #0f172a;cursor:pointer
+}
 
 .workspace{padding:28px;min-height:calc(100vh - 120px)}
 .empty{min-height:65vh;display:flex;align-items:center;justify-content:center}
@@ -136,20 +142,17 @@ select.tool{appearance:auto}
 
 .text-layer{pointer-events:none}
 .pdf-text{
- position:absolute;pointer-events:none;white-space:pre;
+ position:absolute;pointer-events:auto;white-space:pre;
  color:transparent;background:transparent;border:0;
- margin:0;padding:0;line-height:1;overflow:visible
+ margin:0;padding:2px 4px;line-height:1;overflow:visible;
+ cursor:text;border-radius:3px;outline:none
 }
-.editing .pdf-text{
- pointer-events:auto;color:#111827;background:rgba(255,255,255,.96);
- border:1px solid #2563eb;border-radius:3px;padding:2px 4px;
- cursor:text;z-index:30;outline:none
-}
-.editing .pdf-text:hover{
+.pdf-text:hover{
  box-shadow:0 0 0 2px rgba(37,99,235,.12)
 }
 .pdf-text:focus{
- border:2px solid #2563eb;
+ color:#111827;background:rgba(255,255,255,.96);
+ border:1px solid #2563eb;z-index:30;
  box-shadow:0 0 0 3px rgba(37,99,235,.12)
 }
 
@@ -232,38 +235,20 @@ select.tool{appearance:auto}
     <input id="fileInput" hidden type="file" accept=".pdf,.jpg,.jpeg,.png,.webp">
    </label>
 
-   <button class="tool edit" id="editBtn">📝 Edit Text</button>
-
    <label class="tool image">
     🖼️ Image
     <input id="imageInput" hidden type="file" accept="image/*">
    </label>
 
-   <button class="tool draw" id="drawBtn">🖊️ Drawing</button>
-
-   <div class="drawing-panel" id="drawingPanel">
-    <button class="subtool pen" id="penBtn">🖊 Pen</button>
-    <button class="subtool eraser" id="eraserBtn">🧽 Eraser</button>
-
-    <select class="subtool draw-size" id="drawSize">
-     <option value="2">2 px</option>
-     <option value="4" selected>4 px</option>
-     <option value="6">6 px</option>
-     <option value="10">10 px</option>
-     <option value="16">16 px</option>
-     <option value="24">24 px</option>
-     <option value="32">32 px</option>
-    </select>
-
-    <label class="subtool draw-color">
-     🎨
-     <input id="drawColor" type="color" value="#111111">
-    </label>
-   </div>
-
    <button class="tool undo" id="undoBtn">↶ Undo</button>
    <button class="tool redo" id="redoBtn">↷ Redo</button>
-   <button class="tool rotate" id="rotateBtn">🔄 Rotate</button>
+   <button class="tool" id="rotateBtn" style="background:#0891b2">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+     <path d="M21 12a9 9 0 1 1-3.5-7.1"/>
+     <polyline points="21 3 21 9 15 9"/>
+    </svg>
+    Rotate
+   </button>
 
    <select class="tool fontbox font-select" id="fontSelect">
     <optgroup label="English / Latin">
@@ -311,11 +296,24 @@ select.tool{appearance:auto}
     <option>72</option>
    </select>
 
-   <button class="tool zoom" id="zoomOut">−</button>
-   <div class="zoom-value" id="zoomValue">100%</div>
-   <button class="tool zoom" id="zoomIn">+</button>
+   <div class="zoom-group">
+    <div class="zoom-percent" id="zoomValue">100%</div>
+    <button class="zoom-icon-btn" id="zoomOut" title="Zoom out">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>
+     </svg>
+    </button>
+    <input type="range" id="zoomSlider" class="zoom-slider" min="50" max="300" step="5" value="100">
+    <button class="zoom-icon-btn" id="zoomIn" title="Zoom in">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+     </svg>
+    </button>
+   </div>
 
-   <button class="tool save" id="saveBtn">💾 Save</button>
+   <button class="tool save" id="saveBtn">💾 Save PDF</button>
+   <button class="tool save" id="saveWordBtn" style="background:#2563eb">📄 Save Word</button>
+   <button class="tool save" id="saveJpgBtn" style="background:#0f766e">🖼️ Save JPG</button>
 
   </div>
  </div>
@@ -425,7 +423,8 @@ $("fileInput").addEventListener("change",async e=>{
     texts:[],
     newTexts:[],
     images:[],
-    strokes:[]
+    strokes:[],
+    needsOCR:false
    });
   }
 
@@ -435,6 +434,13 @@ $("fileInput").addEventListener("change",async e=>{
 
   status("PDF loaded");
   toast("PDF opened");
+
+  const hasScanned=S.pages.some(p=>p.needsOCR);
+
+  if(hasScanned){
+   toast("Scanned pages detected — running OCR...");
+   await runOCR();
+  }
 
  }catch(err){
   console.error(err);
@@ -503,6 +509,8 @@ async function renderPage(n){
 
  const content=await page.getTextContent();
 
+ ps.needsOCR = content.items.length===0;
+
  content.items.forEach((item,index)=>{
 
   if(!item.str)return;
@@ -543,13 +551,11 @@ async function renderPage(n){
   el.contentEditable="false";
 
   el.addEventListener("click",e=>{
-   if(!S.edit)return;
    e.stopPropagation();
    activateText(el);
   });
 
   el.addEventListener("input",()=>{
-   if(!S.edit)return;
    saveExistingText(el);
   });
 
@@ -568,23 +574,8 @@ async function renderPage(n){
   createImage(holder,n,obj);
  });
 
- if(ps.strokes.length){
-  const dc=document.createElement("canvas");
-  dc.className="drawing-canvas";
-  dc.width=Math.ceil(view.width);
-  dc.height=Math.ceil(view.height);
-  dc.style.width=view.width+"px";
-  dc.style.height=view.height+"px";
-
-  holder.appendChild(dc);
-
-  redrawStrokes(dc,ps.strokes);
-  setupDrawing(dc,n);
- }
-
  holder.addEventListener("dblclick",e=>{
 
-  if(!S.edit)return;
 
   if(
    e.target.classList.contains("pdf-text") ||
@@ -618,8 +609,6 @@ async function renderPage(n){
  });
 
  pagesEl.appendChild(holder);
-
- if(S.edit)holder.classList.add("editing");
 }
 
 function activateText(el){
@@ -682,30 +671,13 @@ function autoSave(){
  }catch(e){}
 }
 
-$("editBtn").addEventListener("click",()=>{
-
- if(!S.pdf){
-  toast("Open a PDF first");
-  return;
+function findNewTextObj(id){
+ for(const ps of S.pages){
+  const obj=ps.newTexts.find(t=>t.id===id);
+  if(obj)return {ps,obj};
  }
-
- S.edit=!S.edit;
-
- $("editBtn").classList.toggle("active",S.edit);
-
- document.querySelectorAll(".page-holder").forEach(h=>{
-  h.classList.toggle("editing",S.edit);
- });
-
- if(S.edit){
-  status("Edit Text ON");
-  toast("Click any text box to edit");
- }else{
-  if(S.activeText)S.activeText.blur();
-  S.activeText=null;
-  status("Ready");
- }
-});
+ return null;
+}
 
 $("fontSelect").addEventListener("change",()=>{
 
@@ -713,9 +685,19 @@ $("fontSelect").addEventListener("change",()=>{
 
  pushHistory();
 
- S.activeText.style.fontFamily=$("fontSelect").value;
+ const val=$("fontSelect").value;
 
- saveExistingText(S.activeText);
+ S.activeText.style.fontFamily=val;
+
+ if(S.activeText.dataset.newId){
+  const found=findNewTextObj(S.activeText.dataset.newId);
+  if(found){
+   found.obj.font=val;
+   autoSave();
+  }
+ }else{
+  saveExistingText(S.activeText);
+ }
 });
 
 $("sizeSelect").addEventListener("change",()=>{
@@ -724,10 +706,19 @@ $("sizeSelect").addEventListener("change",()=>{
 
  pushHistory();
 
- S.activeText.style.fontSize=
-  Number($("sizeSelect").value)*S.zoom+"px";
+ const val=Number($("sizeSelect").value);
 
- saveExistingText(S.activeText);
+ S.activeText.style.fontSize=val*S.zoom+"px";
+
+ if(S.activeText.dataset.newId){
+  const found=findNewTextObj(S.activeText.dataset.newId);
+  if(found){
+   found.obj.size=val;
+   autoSave();
+  }
+ }else{
+  saveExistingText(S.activeText);
+ }
 });
 
 function createNewText(holder,n,obj){
@@ -899,126 +890,7 @@ function selectImage(el){
  S.selectedImage=el;
 }
 
-$("drawBtn").addEventListener("click",()=>{
 
- if(!S.pdf){
-  toast("Open a PDF first");
-  return;
- }
-
- S.drawing=!S.drawing;
-
- $("drawBtn").classList.toggle("active",S.drawing);
-
- $("drawingPanel").classList.toggle(
-  "show",
-  S.drawing
- );
-
- document.querySelectorAll(".drawing-canvas")
- .forEach(c=>c.classList.toggle("active",S.drawing));
-
- if(S.drawing){
-
-  S.edit=false;
-  $("editBtn").classList.remove("active");
-
-  document.querySelectorAll(".page-holder")
-  .forEach(h=>h.classList.remove("editing"));
-
-  status("Drawing ON");
-  toast("Pen ready");
-
- }else{
-
-  status("Ready");
- }
-});
-
-$("penBtn").addEventListener("click",()=>{
- S.drawMode="pen";
- $("penBtn").classList.add("active");
- $("eraserBtn").classList.remove("active");
- toast("Pen selected");
-});
-
-$("eraserBtn").addEventListener("click",()=>{
- S.drawMode="eraser";
- $("eraserBtn").classList.add("active");
- $("penBtn").classList.remove("active");
- toast("Eraser selected");
-});
-
-function setupDrawing(canvas,n){
-
- let drawing=false;
- let current=null;
-
- function point(e){
-
-  const r=canvas.getBoundingClientRect();
-
-  return {
-   x:(e.clientX-r.left)/S.zoom,
-   y:(e.clientY-r.top)/S.zoom
-  };
- }
-
- canvas.addEventListener("pointerdown",e=>{
-
-  if(!S.drawing)return;
-
-  e.preventDefault();
-
-  drawing=true;
-
-  current={
-   mode:S.drawMode,
-   color:$("drawColor").value,
-   size:Number($("drawSize").value),
-   points:[point(e)]
-  };
-
-  pushHistory();
-
-  canvas.setPointerCapture(e.pointerId);
- });
-
- canvas.addEventListener("pointermove",e=>{
-
-  if(!drawing||!current)return;
-
-  current.points.push(point(e));
-
-  redrawStrokes(
-   canvas,
-   S.pages[n-1].strokes.concat([current])
-  );
- });
-
- canvas.addEventListener("pointerup",e=>{
-
-  if(!drawing||!current)return;
-
-  drawing=false;
-
-  S.pages[n-1].strokes.push(current);
-
-  current=null;
-
-  redrawStrokes(
-   canvas,
-   S.pages[n-1].strokes
-  );
-
-  autoSave();
- });
-
- canvas.addEventListener("pointercancel",()=>{
-  drawing=false;
-  current=null;
- });
-}
 
 function redrawStrokes(canvas,strokes){
 
@@ -1134,6 +1006,8 @@ function setZoom(z){
 
  $("zoomValue").textContent=
   Math.round(z*100)+"%";
+
+ $("zoomSlider").value=Math.round(z*100);
 }
 
 $("zoomIn").addEventListener("click",()=>{
@@ -1142,6 +1016,10 @@ $("zoomIn").addEventListener("click",()=>{
 
 $("zoomOut").addEventListener("click",()=>{
  setZoom(S.zoom-.1);
+});
+
+$("zoomSlider").addEventListener("input",e=>{
+ setZoom(Number(e.target.value)/100);
 });
 
 document.addEventListener("keydown",e=>{
@@ -1185,6 +1063,272 @@ document.addEventListener("keydown",e=>{
   }
  }
 });
+
+async function runOCR(){
+
+ if(!S.pdf){
+  toast("Open a PDF first");
+  return;
+ }
+
+ const targets=S.pages
+  .map((p,i)=>({p,i}))
+  .filter(o=>o.p.needsOCR);
+
+ if(!targets.length){
+  return;
+ }
+
+ for(const {p,i} of targets){
+
+  const n=i+1;
+
+  status("Running OCR on page "+n+"...");
+
+  const canvas=document.querySelector(
+   '.page-holder[data-page="'+n+'"] .page-canvas'
+  );
+
+  if(!canvas)continue;
+
+  try{
+
+   const { data }=await Tesseract.recognize(
+    canvas,
+    "eng+ben",
+    {
+     logger:m=>{
+      if(m.status==="recognizing text"){
+       status("OCR page "+n+": "+Math.round(m.progress*100)+"%");
+      }
+     }
+    }
+   );
+
+   pushHistory();
+
+   (data.words||[]).forEach(w=>{
+
+    if(!w.text||!w.text.trim())return;
+
+    const bx=w.bbox;
+    const wpx=Math.max(4,bx.x1-bx.x0);
+    const hpx=Math.max(4,bx.y1-bx.y0);
+
+    const obj={
+     id:"ocr_"+Date.now()+"_"+Math.random(),
+     x:bx.x0/S.zoom,
+     y:bx.y0/S.zoom,
+     text:w.text,
+     font:$("fontSelect").value,
+     size:Math.max(8,Math.round((hpx/S.zoom)*0.82)),
+     isOcr:true,
+     w:wpx/S.zoom,
+     h:hpx/S.zoom
+    };
+
+    p.newTexts.push(obj);
+   });
+
+   p.needsOCR=false;
+
+  }catch(err){
+   console.error("OCR failed on page",n,err);
+   toast("OCR failed on page "+n);
+  }
+ }
+
+ renderAll();
+ autoSave();
+
+ status("OCR complete");
+ toast("✓ OCR complete — scanned text is now editable");
+}
+
+$("saveJpgBtn").addEventListener("click",saveAsJPG);
+
+async function saveAsJPG(){
+
+ if(!S.pdf){
+  toast("Open a PDF first");
+  return;
+ }
+
+ const canvases=document.querySelectorAll(".page-canvas");
+
+ if(!canvases.length){
+  toast("Nothing to export");
+  return;
+ }
+
+ status("Exporting JPG...");
+
+ for(let i=0;i<canvases.length;i++){
+
+  const canvas=canvases[i];
+
+  await new Promise(resolve=>{
+
+   canvas.toBlob(blob=>{
+
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+
+    a.href=url;
+    a.download="Redwan-PDF-page-"+(i+1)+".jpg";
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+
+    resolve();
+
+   },"image/jpeg",0.95);
+  });
+
+  await new Promise(r=>setTimeout(r,300));
+ }
+
+ status("JPG exported");
+ toast("✓ Saved as JPG ("+canvases.length+" page(s))");
+}
+
+$("saveWordBtn").addEventListener("click",saveAsWord);
+
+function escapeHtml(str){
+ return String(str)
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;");
+}
+
+async function saveAsWord(){
+
+ if(!S.pdf){
+  toast("Open a PDF first");
+  return;
+ }
+
+ const btn=$("saveWordBtn");
+ const old=btn.innerHTML;
+
+ try{
+
+  btn.disabled=true;
+  btn.innerHTML="⏳ Building...";
+  status("Building Word file...");
+
+  let bodyHtml="";
+
+  for(let p=0;p<S.pages.length;p++){
+
+   const pdfjsPage=await S.pdf.getPage(p+1);
+
+   const viewport=pdfjsPage.getViewport({
+    scale:1,
+    rotation:0
+   });
+
+   const w=viewport.width;
+   const h=viewport.height;
+
+   bodyHtml+=
+    '<div style="position:relative;width:'+w+
+    'pt;height:'+h+
+    'pt;margin:0 0 24pt 0;border:1px solid #ccc;page-break-after:always;">';
+
+   const content=await pdfjsPage.getTextContent();
+   const ps=S.pages[p];
+
+   content.items.forEach((item,index)=>{
+
+    if(!item.str)return;
+
+    const edited=ps.texts.find(x=>x.index===index);
+    const text=edited?edited.text:item.str;
+
+    if(!text)return;
+
+    const t=item.transform;
+    const x=t[4];
+    const y=t[5];
+
+    const size=(edited&&edited.size)||Math.abs(t[3])||12;
+    const font=(edited&&edited.font)||"Arial";
+
+    bodyHtml+=
+     '<div style="position:absolute;left:'+x+
+     'pt;top:'+(h-y-size)+
+     'pt;font-size:'+size+
+     'pt;font-family:\''+font+
+     '\',sans-serif;white-space:pre;">'+
+     escapeHtml(text)+'</div>';
+   });
+
+   ps.newTexts.forEach(t=>{
+
+    if(!t.text)return;
+
+    bodyHtml+=
+     '<div style="position:absolute;left:'+t.x+
+     'pt;top:'+t.y+
+     'pt;font-size:'+t.size+
+     'pt;font-family:\''+(t.font||"Arial")+
+     '\',sans-serif;white-space:pre;">'+
+     escapeHtml(t.text)+'</div>';
+   });
+
+   bodyHtml+='</div>';
+  }
+
+  const doc=
+   '<html xmlns:o="urn:schemas-microsoft-com:office:office" '+
+   'xmlns:w="urn:schemas-microsoft-com:office:word" '+
+   'xmlns="http://www.w3.org/TR/REC-html40">'+
+   '<head><meta charset="utf-8"><title>Redwan PDF Editor Export</title>'+
+   '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>'+
+   '</w:WordDocument></xml><![endif]-->'+
+   '</head><body>'+bodyHtml+'</body></html>';
+
+  const blob=new Blob(
+   ['\ufeff',doc],
+   {type:"application/msword"}
+  );
+
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="Redwan-PDF-Edited.doc";
+
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+
+  status("Word file saved");
+  toast("✓ Saved as Word (.doc)");
+
+  btn.innerHTML=old;
+  btn.disabled=false;
+
+ }catch(err){
+
+  console.error("WORD SAVE ERROR:",err);
+
+  btn.innerHTML="⚠ Failed";
+  status("Word export failed");
+  toast("Word export failed");
+
+  setTimeout(()=>{
+   btn.innerHTML=old;
+   btn.disabled=false;
+  },2200);
+ }
+}
 
 $("saveBtn").addEventListener("click",savePDF);
 
@@ -1283,6 +1427,16 @@ async function savePDF(){
    for(const t of ps.newTexts){
 
     if(!t.text)continue;
+
+    if(t.isOcr){
+     pdfPage.drawRectangle({
+      x:t.x*sx,
+      y:pageHeight-(t.y+(t.h||t.size))*sy,
+      width:(t.w||t.size*2)*sx,
+      height:(t.h||t.size*1.4)*sy,
+      color:PDFLib.rgb(1,1,1)
+     });
+    }
 
     pdfPage.drawText(
      t.text,
@@ -1435,9 +1589,8 @@ function hexRGB(hex){
  };
 }
 
-$("penBtn").classList.add("active");
-
 </script>
 
 </body>
 </html>
+
