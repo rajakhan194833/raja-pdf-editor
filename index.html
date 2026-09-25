@@ -1,1 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Raja PDF Editor</title>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs"
+type="module"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+<style>
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+font-family:Arial,Helvetica,sans-serif;
+background:#f3f5f7;
+color:#17202a;
+}
+
+header{
+height:64px;
+background:#ffffff;
+border-bottom:1px solid #ddd;
+display:flex;
+align-items:center;
+padding:0 18px;
+gap:15px;
+position:sticky;
+top:0;
+z-index:1000;
+}
+
+.logo{
+font-size:22px;
+font-weight:800;
+color:#16a34a;
+white-space:nowrap;
+}
+
+.toolbar{
+display:flex;
+align-items:center;
+gap:7px;
+flex-wrap:wrap;
+}
+
+button,
+.fileBtn{
+border:1px solid #d0d5da;
+background:#fff;
+border-radius:7px;
+padding:9px 13px;
+cursor:pointer;
+font-size:14px;
+}
+
+button:hover,
+.fileBtn:hover{
+background:#f1f5f3;
+}
+
+.primary{
+background:#16a34a;
+color:#fff;
+border-color:#16a34a;
+font-weight:700;
+}
+
+.primary:hover{
+background:#12833c;
+}
+
+input[type=file]{
+display:none;
+}
+
+main{
+display:flex;
+height:calc(100vh - 64px);
+}
+
+aside{
+width:220px;
+background:#fff;
+border-right:1px solid #ddd;
+padding:14px;
+overflow:auto;
+}
+
+aside h3{
+margin:6px 0 12px;
+font-size:15px;
+}
+
+.tool{
+width:100%;
+margin-bottom:8px;
+text-align:left;
+}
+
+.workspace{
+flex:1;
+overflow:auto;
+padding:30px;
+background:#e9ecef;
+}
+
+#pages{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:28px;
+}
+
+.pageWrap{
+position:relative;
+background:#fff;
+box-shadow:0 3px 18px rgba(0,0,0,.18);
+}
+
+.pdfCanvas{
+display:block;
+}
+
+.overlay{
+position:absolute;
+inset:0;
+overflow:hidden;
+}
+
+.editText{
+position:absolute;
+min-width:30px;
+min-height:22px;
+padding:2px 4px;
+border:1px dashed transparent;
+background:transparent;
+white-space:pre;
+cursor:move;
+user-select:none;
+}
+
+.editText.selected{
+border-color:#16a34a;
+}
+
+.editText[contenteditable="true"]{
+cursor:text;
+user-select:text;
+background:rgba(255,255,255,.85);
+}
+
+.imageObj{
+position:absolute;
+cursor:move;
+border:1px dashed transparent;
+}
+
+.imageObj.selected{
+border-color:#16a34a;
+}
+
+.drawCanvas{
+position:absolute;
+left:0;
+top:0;
+pointer-events:none;
+}
+
+.empty{
+margin-top:100px;
+text-align:center;
+color:#666;
+}
+
+.empty strong{
+display:block;
+font-size:26px;
+color:#16a34a;
+margin-bottom:10px;
+}
+
+.zoomBox{
+display:flex;
+align-items:center;
+gap:5px;
+}
+
+#zoomLabel{
+min-width:48px;
+text-align:center;
+}
+
+.status{
+position:fixed;
+bottom:12px;
+left:50%;
+transform:translateX(-50%);
+background:#17202a;
+color:#fff;
+padding:8px 15px;
+border-radius:20px;
+font-size:13px;
+z-index:2000;
+}
+
+@media(max-width:850px){
+
+header{
+height:auto;
+padding:10px;
+align-items:flex-start;
+}
+
+main{
+height:calc(100vh - 105px);
+}
+
+aside{
+width:160px;
+}
+
+.logo{
+font-size:18px;
+}
+
+.workspace{
+padding:12px;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+Raja PDF Editor
+</div>
+
+<div class="toolbar">
+
+<label class="fileBtn primary">
+＋ Add File
+<input id="fileInput" type="file" accept="application/pdf">
+</label>
+
+<button onclick="addText()">✏️ Add Text</button>
+
+<button onclick="addImage()">🖼️ Image</button>
+
+<button onclick="enableDraw()">🖊️ Draw</button>
+
+<button onclick="clearSelection()">✖ Clear</button>
+
+<div class="zoomBox">
+
+<button onclick="changeZoom(-0.1)">−</button>
+
+<span id="zoomLabel">100%</span>
+
+<button onclick="changeZoom(0.1)">+</button>
+
+</div>
+
+<button class="primary" onclick="exportPDF()">
+⬇ Save PDF
+</button>
+
+</div>
+
+</header>
+
+<main>
+
+<aside>
+
+<h3>Tools</h3>
+
+<button class="tool" onclick="addText()">
+✏️ Add Text
+</button>
+
+<button class="tool" onclick="addImage()">
+🖼️ Add Image
+</button>
+
+<button class="tool" onclick="enableDraw()">
+🖊️ Drawing
+</button>
+
+<button class="tool" onclick="deleteSelected()">
+🗑️ Delete Selected
+</button>
+
+<button class="tool" onclick="clearAllOverlays()">
+🧹 Clear Edits
+</button>
+
+<h3>Text</h3>
+
+<label>Font Size</label>
+
+<input
+id="fontSize"
+type="number"
+value="18"
+min="6"
+max="120"
+style="width:100%;padding:8px;margin:5px 0 10px"
+>
+
+<label>Font</label>
+
+<select
+id="fontFamily"
+style="width:100%;padding:8px;margin:5px 0 10px"
+>
+
+<option>Arial</option>
+<option>Times New Roman</option>
+<option>Courier New</option>
+<option>Tahoma</option>
+<option>Verdana</option>
+
+</select>
+
+<button class="tool" onclick="makeSelectedEditable()">
+✏️ Edit Selected Text
+</button>
+
+<h3>Page</h3>
+
+<button class="tool" onclick="rotatePages()">
+🔄 Rotate Pages
+</button>
+
+</aside>
+
+<section class="workspace">
+
+<div id="pages">
+
+<div class="empty">
+
+<strong>Raja PDF Editor</strong>
+
+Open a PDF file to start editing.
+
+<br><br>
+
+Add text, images and drawings, then save your PDF.
+
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+<div class="status" id="status">
+Ready
+</div>
+
+<script type="module">
+
+import * as pdfjsLib from
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+
+const {
+PDFDocument,
+rgb,
+StandardFonts
+}=PDFLib;
+
+let pdfFile=null;
+let pdfDocument=null;
+let scale=1;
+let selected=null;
+let drawMode=false;
+let pageRotation=0;
+
+const pages=document.getElementById("pages");
+const statusBox=document.getElementById("status");
+
+function status(message){
+
+statusBox.textContent=message;
+
+clearTimeout(window.statusTimer);
+
+window.statusTimer=setTimeout(()=>{
+
+statusBox.textContent="Ready";
+
+},2500);
+
+}
+
+document
+.getElementById("fileInput")
+.addEventListener("change",async event=>{
+
+const file=event.target.files[0];
+
+if(!file)return;
+
+pdfFile=file;
+
+status("Loading PDF...");
+
+try{
+
+const buffer=await file.arrayBuffer();
+
+pdfDocument=
+await pdfjsLib
+.getDocument({data:buffer})
+.promise;
+
+await renderPDF();
+
+status(
+"PDF loaded — "+
+pdfDocument.numPages+
+" page(s)"
+);
+
+}catch(error){
+
+console.error(error);
+
+status("Unable to open PDF.");
+
+alert("Unable to open this PDF.");
+
+}
+
+});
+
+async function renderPDF(){
+
+pages.innerHTML="";
+
+for(
+let pageNumber=1;
+pageNumber<=pdfDocument.numPages;
+pageNumber++
+){
+
+const page=
+await pdfDocument.getPage(pageNumber);
+
+const viewport=
+page.getViewport({
+scale:scale,
+rotation:pageRotation
+});
+
+const wrap=
+document.createElement("div");
+
+wrap.className="pageWrap";
+
+wrap.dataset.page=pageNumber;
+
+const canvas=
+document.createElement("canvas");
+
+canvas.className="pdfCanvas";
+
+canvas.width=viewport.width;
+canvas.height=viewport.height;
+
+wrap.appendChild(canvas);
+
+const overlay=
+document.createElement("div");
+
+overlay.className="overlay";
+
+wrap.appendChild(overlay);
+
+const context=
+canvas.getContext("2d");
+
+await page.render({
+
+canvasContext:context,
+viewport:viewport
+
+}).promise;
+
+createDrawCanvas(wrap);
+
+pages.appendChild(wrap);
+
+}
+
+}
+
+function createDrawCanvas(wrap){
+
+const canvas=
+document.createElement("canvas");
+
+canvas.className="drawCanvas";
+
+canvas.width=wrap.clientWidth;
+canvas.height=wrap.clientHeight;
+
+wrap.appendChild(canvas);
+
+let drawing=false;
+
+canvas.addEventListener(
+"pointerdown",
+event=>{
+
+if(!drawMode)return;
+
+drawing=true;
+
+const rect=
+canvas.getBoundingClientRect();
+
+const ctx=
+canvas.getContext("2d");
+
+ctx.beginPath();
+
+ctx.moveTo(
+event.clientX-rect.left,
+event.clientY-rect.top
+);
+
+}
+);
+
+canvas.addEventListener(
+"pointermove",
+event=>{
+
+if(!drawing || !drawMode)return;
+
+const rect=
+canvas.getBoundingClientRect();
+
+const ctx=
+canvas.getContext("2d");
+
+ctx.lineWidth=2;
+ctx.lineCap="round";
+
+ctx.lineTo(
+event.clientX-rect.left,
+event.clientY-rect.top
+);
+
+ctx.stroke();
+
+}
+);
+
+canvas.addEventListener(
+"pointerup",
+()=>{
+drawing=false;
+}
+);
+
+canvas.addEventListener(
+"pointerleave",
+()=>{
+drawing=false;
+}
+);
+
+}
+
+window.changeZoom=function(amount){
+
+scale=Math.max(
+0.5,
+Math.min(3,scale+amount)
+);
+
+document.getElementById("zoomLabel")
+.textContent=
+Math.round(scale*100)+"%";
+
+if(pdfDocument){
+
+renderPDF();
+
+}
+
+};
+
+window.addText=function(){
+
+if(!pdfDocument){
+
+alert("Please open a PDF first.");
+
+return;
+
+}
+
+const wrap=
+document.querySelector(".pageWrap");
+
+if(!wrap)return;
+
+const overlay=
+wrap.querySelector(".overlay");
+
+const text=
+document.createElement("div");
+
+text.className="editText";
+
+text.textContent="Type here";
+
+text.contentEditable="false";
+
+text.style.left="60px";
+text.style.top="60px";
+
+text.style.fontSize=
+document.getElementById("fontSize").value+
+"px";
+
+text.style.fontFamily=
+document.getElementById("fontFamily").value;
+
+overlay.appendChild(text);
+
+makeDraggable(text);
+
+selectObject(text);
+
+status(
+"Text added. Double-click to edit."
+);
+
+};
+
+function selectObject(object){
+
+if(selected){
+
+selected.classList.remove("selected");
+
+}
+
+selected=object;
+
+if(selected){
+
+selected.classList.add("selected");
+
+}
+
+}
+
+function makeDraggable(element){
+
+let dragging=false;
+
+let startX=0;
+let startY=0;
+
+let startLeft=0;
+let startTop=0;
+
+element.addEventListener(
+"pointerdown",
+event=>{
+
+if(
+element.contentEditable==="true"
+){
+
+return;
+
+}
+
+event.stopPropagation();
+
+selectObject(element);
+
+dragging=true;
+
+startX=event.clientX;
+startY=event.clientY;
+
+startLeft=
+parseFloat(element.style.left)||0;
+
+startTop=
+parseFloat(element.style.top)||0;
+
+element.setPointerCapture(
+event.pointerId
+);
+
+}
+);
+
+element.addEventListener(
+"pointermove",
+event=>{
+
+if(!dragging)return;
+
+const dx=
+event.clientX-startX;
+
+const dy=
+event.clientY-startY;
+
+element.style.left=
+(startLeft+dx)+"px";
+
+element.style.top=
+(startTop+dy)+"px";
+
+}
+);
+
+element.addEventListener(
+"pointerup",
+()=>{
+dragging=false;
+}
+);
+
+element.addEventListener(
+"dblclick",
+()=>{
+makeSelectedEditable();
+}
+);
+
+}
+
+window.makeSelectedEditable=function(){
+
+if(
+!selected ||
+!selected.classList.contains("editText")
+){
+
+alert(
+"Please select a text object first."
+);
+
+return;
+
+}
+
+selected.contentEditable="true";
+
+selected.focus();
+
+selected.classList.add("selected");
+
+status(
+"Edit the text. Click outside when finished."
+);
+
+};
+
+window.addImage=function(){
+
+if(!pdfDocument){
+
+alert("Please open a PDF first.");
+
+return;
+
+}
+
+const input=
+document.createElement("input");
+
+input.type="file";
+
+input.accept=
+"image/png,image/jpeg,image/webp";
+
+input.onchange=
+event=>{
+
+const file=
+event.target.files[0];
+
+if(!file)return;
+
+const reader=
+new FileReader();
+
+reader.onload=()=>{
+
+const wrap=
+document.querySelector(".pageWrap");
+
+const overlay=
+wrap.querySelector(".overlay");
+
+const image=
+document.createElement("img");
+
+image.className="imageObj";
+
+image.src=reader.result;
+
+image.style.left="70px";
+image.style.top="70px";
+image.style.width="180px";
+
+overlay.appendChild(image);
+
+makeDraggable(image);
+
+selectObject(image);
+
+status("Image added.");
+
+};
+
+reader.readAsDataURL(file);
+
+};
+
+input.click();
+
+};
+
+window.enableDraw=function(){
+
+drawMode=!drawMode;
+
+document
+.querySelectorAll(".drawCanvas")
+.forEach(canvas=>{
+
+canvas.style.pointerEvents=
+drawMode ?
+"auto" :
+"none";
+
+});
+
+status(
+drawMode ?
+"Drawing mode ON" :
+"Drawing mode OFF"
+);
+
+};
+
+window.clearSelection=function(){
+
+if(selected){
+
+selected.classList.remove(
+"selected"
+);
+
+if(
+selected.contentEditable==="true"
+){
+
+selected.contentEditable="false";
+
+}
+
+selected=null;
+
+}
+
+};
+
+window.deleteSelected=function(){
+
+if(!selected){
+
+alert(
+"Please select an object first."
+);
+
+return;
+
+}
+
+selected.remove();
+
+selected=null;
+
+status("Object deleted.");
+
+};
+
+window.clearAllOverlays=function(){
+
+document
+.querySelectorAll(".editText,.imageObj")
+.forEach(element=>{
+
+element.remove();
+
+});
+
+document
+.querySelectorAll(".drawCanvas")
+.forEach(canvas=>{
+
+const ctx=
+canvas.getContext("2d");
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+});
+
+selected=null;
+
+status("Edits cleared.");
+
+};
+
+window.rotatePages=function(){
+
+if(!pdfDocument)return;
+
+pageRotation=
+(pageRotation+90)%360;
+
+renderPDF();
+
+status("Pages rotated.");
+
+};
+
+document.addEventListener(
+"pointerdown",
+event=>{
+
+if(
+!event.target.classList.contains(
+"editText"
+) &&
+!event.target.classList.contains(
+"imageObj"
+)
+){
+
+clearSelection();
+
+}
+
+});
+
+window.exportPDF=async function(){
+
+if(!pdfFile){
+
+alert(
+"Please open a PDF first."
+);
+
+return;
+
+}
+
+status("Creating PDF...");
+
+try{
+
+const originalBytes=
+await pdfFile.arrayBuffer();
+
+const pdfDoc=
+await PDFDocument.load(
+originalBytes
+);
+
+const pdfPages=
+pdfDoc.getPages();
+
+const font=
+await pdfDoc.embedFont(
+StandardFonts.Helvetica
+);
+
+const wraps=
+document.querySelectorAll(
+".pageWrap"
+);
+
+for(
+let i=0;
+i<wraps.length;
+i++
+){
+
+const wrap=wraps[i];
+
+const pdfPage=
+pdfPages[i];
+
+const pageWidth=
+pdfPage.getWidth();
+
+const pageHeight=
+pdfPage.getHeight();
+
+const displayWidth=
+wrap.clientWidth;
+
+const displayHeight=
+wrap.clientHeight;
+
+const sx=
+pageWidth/displayWidth;
+
+const sy=
+pageHeight/displayHeight;
+
+wrap
+.querySelectorAll(".editText")
+.forEach(element=>{
+
+const rect=
+element.getBoundingClientRect();
+
+const parentRect=
+wrap.getBoundingClientRect();
+
+const x=
+(rect.left-parentRect.left)*sx;
+
+const top=
+(rect.top-parentRect.top)*sy;
+
+const size=
+parseFloat(
+getComputedStyle(element)
+.fontSize
+)*sy;
+
+const text=
+element.innerText ||
+element.textContent;
+
+pdfPage.drawText(
+text,
+{
+x:x,
+y:pageHeight-top-size,
+size:size,
+font:font,
+color:rgb(0,0,0)
+}
+);
+
+});
+
+const images=
+wrap.querySelectorAll(
+".imageObj"
+);
+
+for(
+const imageElement of images
+){
+
+try{
+
+const response=
+await fetch(
+imageElement.src
+);
+
+const bytes=
+await response.arrayBuffer();
+
+let embeddedImage;
+
+if(
+imageElement.src
+.includes("image/png")
+){
+
+embeddedImage=
+await pdfDoc.embedPng(
+bytes
+);
+
+}else{
+
+embeddedImage=
+await pdfDoc.embedJpg(
+bytes
+);
+
+}
+
+const rect=
+imageElement
+.getBoundingClientRect();
+
+const parentRect=
+wrap.getBoundingClientRect();
+
+const x=
+(rect.left-parentRect.left)*sx;
+
+const top=
+(rect.top-parentRect.top)*sy;
+
+const width=
+rect.width*sx;
+
+const height=
+rect.height*sy;
+
+pdfPage.drawImage(
+embeddedImage,
+{
+x:x,
+y:pageHeight-top-height,
+width:width,
+height:height
+}
+);
+
+}catch(error){
+
+console.error(
+"Image export error",
+error
+);
+
+}
+
+}
+
+const drawCanvas=
+wrap.querySelector(
+".drawCanvas"
+);
+
+if(drawCanvas){
+
+const data=
+drawCanvas.toDataURL(
+"image/png"
+);
+
+const response=
+await fetch(data);
+
+const pngBytes=
+await response.arrayBuffer();
+
+const png=
+await pdfDoc.embedPng(
+pngBytes
+);
+
+pdfPage.drawImage(
+png,
+{
+x:0,
+y:0,
+width:pageWidth,
+height:pageHeight
+}
+);
+
+}
+
+}
+
+const output=
+await pdfDoc.save();
+
+const blob=
+new Blob(
+[output],
+{
+type:"application/pdf"
+}
+);
+
+const url=
+URL.createObjectURL(blob);
+
+const link=
+document.createElement("a");
+
+link.href=url;
+
+link.download=
+"Raja-PDF-Editor-Edited.pdf";
+
+document.body.appendChild(link);
+
+link.click();
+
+link.remove();
+
+URL.revokeObjectURL(url);
+
+status(
+"PDF saved successfully."
+);
+
+}catch(error){
+
+console.error(error);
+
+status(
+"PDF export failed."
+);
+
+alert(
+"Could not save PDF.\n\n"+
+error.message
+);
+
+}
+
+};
+
+</script>
+
+</body>
+</html>
