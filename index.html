@@ -200,6 +200,19 @@ select.tool{appearance:auto}
  .toolbar-wrap{top:56px}
  .workspace{padding:12px}
  .empty-card{padding:35px 22px}
+}/* টুলবারের সব আইকনের সাইজ ১৬ পিক্সেল করার কোড */
+.toolbar button, .toolbar label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.toolbar label svg, .toolbar button svg,
+.toolbar label img, .toolbar button img,
+.toolbar label i, .toolbar button i {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
 }
 </style>
 </head>
