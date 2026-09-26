@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Redwan PDF Editor</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Roboto:wght@400;700&family=Lato:wght@400;700&family=Poppins:wght@400;700&family=Playfair+Display:wght@400;700&family=Oswald:wght@400;700&family=Raleway:wght@400;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;700&family=Ubuntu:wght@400;700&family=PT+Sans:wght@400;700&family=Bebas+Neue&family=Source+Sans+3:wght@400;700&family=Libre+Baskerville&family=Libre+Franklin:wght@400;700&family=EB+Garamond&family=Questrial&family=Comic+Neue:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Serif+Bengali:wght@400;700&family=Hind+Siliguri:wght@400;700&family=Tiro+Bangla&family=Mukta:wght@400;700&family=Baloo+Da+2:wght@400;700&family=Galada&family=Atma:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Amiri&family=Cairo:wght@400;700&family=Tajawal:wght@400;700&family=Almarai:wght@400;700&family=Lateef&family=Scheherazade+New:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Hind+Siliguri:wght@400;700&family=Amiri&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
@@ -28,19 +28,16 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
 .save-menu.show{display:block}
 .save-menu button{width:100%;padding:12px 16px;border:0;background:#fff;color:#172033;font-weight:600;font-size:13px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;transition:0.15s}
 .save-menu button:hover{background:#f1f5f9}
-.save-menu button.pdf{border-left:4px solid #059669}
-.save-menu button.word{border-left:4px solid #2563eb}
-.save-menu button.jpg{border-left:4px solid #0f766e}
 .workspace{padding:28px;min-height:calc(100vh - 120px)}
 .empty{min-height:65vh;display:flex;align-items:center;justify-content:center}
 .empty-card{background:#fff;border:1px solid #dbe3ec;border-radius:18px;padding:50px 60px;text-align:center;box-shadow:0 12px 40px rgba(15,23,42,0.08)}
 .empty-icon{font-size:48px;margin-bottom:12px}.empty-card h2{margin:0 0 8px}.empty-card p{margin:0;color:#64748b}
 .pages{display:flex;flex-direction:column;align-items:center;gap:28px}
-.page-holder{position:relative;background:#fff;box-shadow:0 8px 30px rgba(15,23,42,0.15);overflow:hidden;flex:none;margin-bottom:20px;transform-origin:top center;transition:transform 0.15s ease-out}
+.page-holder{position:relative;background:#fff;box-shadow:0 8px 30px rgba(15,23,42,0.15);overflow:visible;flex:none;margin-bottom:20px;transform-origin:top center;transition:transform 0.15s ease-out}
 .page-canvas{display:block;background:#fff}
 .text-layer,.object-layer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 
-/* ✅ SEJDA.COM STYLE - PERFECT TEXT BOXES */
+/* ✅ SEJDA STYLE TEXT BOX */
 .pdf-text{
   position:absolute;
   pointer-events:auto;
@@ -49,16 +46,14 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
   background:transparent;
   border:1px solid transparent;
   margin:0;
-  padding:0;
-  line-height:1;
+  padding:0 2px;
+  line-height:1.2;
   cursor:text;
   outline:none;
-  transition:border-color 0.15s ease;
+  transition:all 0.15s ease;
   user-select:text;
   z-index:10;
-  display:inline-block;
-  min-width:10px;
-  min-height:12px;
+  display:block;
 }
 .pdf-text:hover{
   border:1.5px dashed rgba(37,99,235,0.7) !important;
@@ -69,25 +64,19 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
   background:transparent !important;
   border:1.5px solid #2563eb !important;
   z-index:100 !important;
-  padding:0 !important;
   caret-color:#000;
-  cursor:text;
 }
 
-.new-text{position:absolute;z-index:60;min-width:60px;min-height:24px;padding:2px 4px;background:transparent;border:1.5px solid #2563eb;outline:none;white-space:pre-wrap;cursor:text;color:#111827}
+.new-text{position:absolute;z-index:60;min-width:60px;padding:2px 4px;background:transparent;border:1.5px solid #2563eb;outline:none;white-space:pre-wrap;cursor:text;color:#111827}
 .image-object{position:absolute;z-index:70;border:2px dashed transparent;cursor:move;user-select:none}
-.image-object:hover{border-color:rgba(147,51,234,0.5)}
 .image-object.selected{border:2px solid #9333ea}
 .image-object img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none}
 .resize-handle{position:absolute;width:14px;height:14px;background:#9333ea;border:2px solid #fff;border-radius:50%;z-index:80;box-shadow:0 2px 4px rgba(0,0,0,0.3)}
 .image-object:not(.selected) .resize-handle{display:none}
-.resize-handle.tl{top:-7px;left:-7px;cursor:nwse-resize}
-.resize-handle.tr{top:-7px;right:-7px;cursor:nesw-resize}
-.resize-handle.bl{bottom:-7px;left:-7px;cursor:nesw-resize}
-.resize-handle.br{bottom:-7px;right:-7px;cursor:nwse-resize}
+.resize-handle.tl{top:-7px;left:-7px;cursor:nwse-resize}.resize-handle.tr{top:-7px;right:-7px;cursor:nesw-resize}
+.resize-handle.bl{bottom:-7px;left:-7px;cursor:nesw-resize}.resize-handle.br{bottom:-7px;right:-7px;cursor:nwse-resize}
 .notice{position:fixed;right:18px;bottom:18px;background:#172033;color:#fff;padding:11px 15px;border-radius:9px;font-size:13px;opacity:0;transform:translateY(10px);pointer-events:none;transition:0.2s;z-index:5000}
 .notice.show{opacity:1;transform:translateY(0)}
-@media(max-width:1100px){.toolbar{overflow-x:auto;-webkit-overflow-scrolling:touch}.tool,.zoom-group{min-width:90px !important;max-width:90px !important;width:90px !important;font-size:11px;height:38px !important}}
 </style>
 </head>
 <body>
@@ -97,9 +86,9 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
 </header>
 <div class="toolbar-wrap">
   <div class="toolbar">
-    <label class="tool add">📂 Add File<input id="fileInput" hidden type="file" accept=".pdf"></label>
-    <label class="tool image">️ Image<input id="imageInput" hidden type="file" accept="image/*"></label>
-    <button class="tool undo" id="undoBtn"> Undo</button>
+    <label class="tool add"> Add File<input id="fileInput" hidden type="file" accept=".pdf"></label>
+    <label class="tool image">🖼️ Image<input id="imageInput" hidden type="file" accept="image/*"></label>
+    <button class="tool undo" id="undoBtn">↶ Undo</button>
     <button class="tool redo" id="redoBtn">↷ Redo</button>
     <button class="tool rotate" id="rotateBtn">⟳ Rotate</button>
     <select class="tool fontbox" id="fontSelect"></select>
@@ -115,7 +104,7 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
 <div class="save-menu" id="saveMenu">
   <button class="pdf" onclick="saveAs('pdf')">💾 Save PDF</button>
   <button class="word" onclick="saveAs('word')">📄 Save Word</button>
-  <button class="jpg" onclick="saveAs('jpg')">️ Save JPG</button>
+  <button class="jpg" onclick="saveAs('jpg')">🖼️ Save JPG</button>
 </div>
 <main class="workspace">
   <div class="empty" id="emptyState"><div class="empty-card"><div class="empty-icon">📄</div><h2>Free Edit your PDF</h2><p>Click <b>📂 Add File</b> to open your PDF.</p></div></div>
@@ -133,25 +122,23 @@ function clone(obj){return JSON.parse(JSON.stringify(obj));}
 function snapshot(){return clone({pages:S.pages,rotation:S.rotation});}
 function pushHistory(){S.history.push(snapshot());if(S.history.length>30)S.history.shift();S.future=[];}
 
-// ✅ 50+ FONTS - COMPLETE LIST
+// ✅ FIXED FONT LIST (No Duplicates)
 const FONT_LIST=[
-  {cat:"— MS Office —",name:"Arial",css:"'Arial','Helvetica',sans-serif"},
-  {cat:"MS Office",name:"Times New Roman",css:"'Times New Roman','Times',serif"},
-  {cat:"MS Office",name:"Calibri",css:"'Open Sans','Arial',sans-serif"},
-  {cat:"MS Office",name:"Cambria",css:"'Merriweather','Georgia',serif"},
+  {cat:"MS Office",name:"Arial",css:"'Arial',sans-serif"},
+  {cat:"MS Office",name:"Times New Roman",css:"'Times New Roman',serif"},
+  {cat:"MS Office",name:"Calibri",css:"'Segoe UI',sans-serif"},
+  {cat:"MS Office",name:"Cambria",css:"'Georgia',serif"},
   {cat:"MS Office",name:"Georgia",css:"'Georgia',serif"},
   {cat:"MS Office",name:"Verdana",css:"'Verdana',sans-serif"},
   {cat:"MS Office",name:"Tahoma",css:"'Tahoma',sans-serif"},
   {cat:"MS Office",name:"Trebuchet MS",css:"'Trebuchet MS',sans-serif"},
-  {cat:"MS Office",name:"Comic Sans MS",css:"'Comic Neue','Comic Sans MS',cursive"},
+  {cat:"MS Office",name:"Comic Sans MS",css:"'Comic Sans MS',cursive"},
   {cat:"MS Office",name:"Impact",css:"'Impact',sans-serif"},
   {cat:"MS Office",name:"Courier New",css:"'Courier New',monospace"},
-  {cat:"MS Office",name:"Garamond",css:"'EB Garamond','Garamond',serif"},
+  {cat:"MS Office",name:"Garamond",css:"'Garamond',serif"},
   {cat:"MS Office",name:"Palatino",css:"'Palatino Linotype',serif"},
-  {cat:"MS Office",name:"Century Gothic",css:"'Questrial',sans-serif"},
-  {cat:"MS Office",name:"Franklin Gothic",css:"'Libre Franklin',sans-serif"},
-  {cat:"MS Office",name:"Segoe UI",css:"'Open Sans',sans-serif"},
-  {cat:"— Canva Popular —",name:"Montserrat",css:"'Montserrat',sans-serif"},
+  {cat:"MS Office",name:"Century Gothic",css:"'Century Gothic',sans-serif"},
+  {cat:"Canva Popular",name:"Montserrat",css:"'Montserrat',sans-serif"},
   {cat:"Canva",name:"Roboto",css:"'Roboto',sans-serif"},
   {cat:"Canva",name:"Lato",css:"'Lato',sans-serif"},
   {cat:"Canva",name:"Poppins",css:"'Poppins',sans-serif"},
@@ -164,12 +151,7 @@ const FONT_LIST=[
   {cat:"Canva",name:"PT Sans",css:"'PT Sans',sans-serif"},
   {cat:"Canva",name:"Bebas Neue",css:"'Bebas Neue',sans-serif"},
   {cat:"Canva",name:"Source Sans 3",css:"'Source Sans 3',sans-serif"},
-  {cat:"Canva",name:"Libre Baskerville",css:"'Libre Baskerville',serif"},
-  {cat:"Canva",name:"Libre Franklin",css:"'Libre Franklin',sans-serif"},
-  {cat:"Canva",name:"EB Garamond",css:"'EB Garamond',serif"},
-  {cat:"Canva",name:"Questrial",css:"'Questrial',sans-serif"},
-  {cat:"Canva",name:"Comic Neue",css:"'Comic Neue',cursive"},
-  {cat:"— বাংলা —",name:"Noto Sans Bengali",css:"'Noto Sans Bengali',sans-serif"},
+  {cat:"বাংলা",name:"Noto Sans Bengali",css:"'Noto Sans Bengali',sans-serif"},
   {cat:"বাংলা",name:"Noto Serif Bengali",css:"'Noto Serif Bengali',serif"},
   {cat:"বাংলা",name:"Hind Siliguri",css:"'Hind Siliguri',sans-serif"},
   {cat:"বাংলা",name:"Tiro Bangla",css:"'Tiro Bangla',serif"},
@@ -181,7 +163,7 @@ const FONT_LIST=[
   {cat:"বাংলা",name:"Kalpurush",css:"'Noto Sans Bengali',sans-serif"},
   {cat:"বাংলা",name:"Siyam Rupali",css:"'Noto Serif Bengali',serif"},
   {cat:"বাংলা",name:"Rupali",css:"'Noto Serif Bengali',serif"},
-  {cat:"— العربية —",name:"Noto Sans Arabic",css:"'Noto Sans Arabic',sans-serif"},
+  {cat:"العربية",name:"Noto Sans Arabic",css:"'Noto Sans Arabic',sans-serif"},
   {cat:"Arabic",name:"Noto Naskh Arabic",css:"'Noto Naskh Arabic',serif"},
   {cat:"Arabic",name:"Amiri",css:"'Amiri',serif"},
   {cat:"Arabic",name:"Cairo",css:"'Cairo',sans-serif"},
@@ -231,7 +213,7 @@ $("fileInput").addEventListener("change",async e=>{
     S.pdf=await pdfjsLib.getDocument({data:S.originalBytes.slice()}).promise;
     S.pages=[];S.history=[];S.future=[];S.rotation=0;S.zoom=1;S.pageTextCache={};
     for(let i=0;i<S.pdf.numPages;i++)S.pages.push({texts:[],newTexts:[],images:[]});
-    emptyState.style.display="none";await renderAll();status("PDF loaded");toast("PDF opened - Click any text to edit");
+    emptyState.style.display="none";await renderAll();status("PDF loaded");toast("PDF opened");
   }catch(err){console.error(err);status("Ready");toast("PDF could not be opened");}
 });
 
@@ -254,33 +236,34 @@ async function renderPage(n){
   const content=S.pageTextCache[n];
   
   content.items.forEach((item,index)=>{
-    if(!item.str)return;
+    if(!item.str || !item.str.trim())return;
     const t=item.transform;const x=t[4],y=t[5];
     const rawSize=Math.abs(t[3])||Math.abs(item.height)||12;
     const edited=ps.texts.find(x=>x.index===index);
     const el=document.createElement("div");
     el.className="pdf-text";el.dataset.page=n;el.dataset.index=index;
     el.textContent=edited?edited.text:item.str;
-    // ✅ PROPER POSITIONING - text baseline aligned
+    
+    // ✅ FIXED Y-AXIS POSITIONING (PDF bottom-up to HTML top-down)
     el.style.left=(x*S.zoom)+"px";
-    el.style.top=(y*S.zoom-rawSize*S.zoom*0.85)+"px";
+    el.style.top=((view.height - y - rawSize)*S.zoom)+"px";
+    
     el.style.fontSize=(edited?.size||rawSize)*S.zoom+"px";
     el.style.fontFamily=(edited?.font||"Arial")+",sans-serif";
-    // ✅ PROPER WIDTH - based on actual text metrics
-    const textWidth=(item.width||item.str.length*rawSize*0.6)*S.zoom;
-    el.style.width=Math.max(textWidth,20)+"px";
-    el.style.height=(rawSize*S.zoom*1.2)+"px";
-    el.style.lineHeight=(rawSize*S.zoom*1.2)+"px";
-    el.contentEditable="false";
     
+    const textLength=item.str.length;
+    const estimatedWidth=textLength*(edited?.size||rawSize)*0.6*S.zoom;
+    el.style.width=Math.max(estimatedWidth,30)+"px";
+    el.style.height=(edited?.size||rawSize)*S.zoom*1.3+"px";
+    
+    el.contentEditable="false";
     el.addEventListener("click",function(e){e.stopPropagation();activateText(this);});
     el.addEventListener("input",function(){saveExistingText(this);});
     el.addEventListener("blur",function(){
-      this.contentEditable="false";
-      this.classList.remove("editing");
-      const page=Number(this.dataset.page);const index=Number(this.dataset.index);const ps=S.pages[page-1];
-      const obj=ps.texts.find(t=>t.index===index);
-      this.style.color = (obj && obj.text) ? "#000000" : "transparent";
+      this.contentEditable="false";this.classList.remove("editing");
+      const pageNum=Number(this.dataset.page);const idx=Number(this.dataset.index);
+      const pageData=S.pages[pageNum-1];const obj=pageData.texts.find(t=>t.index===idx);
+      this.style.color=(obj&&obj.text)?"#000000":"transparent";
     });
     el.addEventListener("keydown",function(e){if(e.key==="Escape")this.blur();});
     textLayer.appendChild(el);
@@ -301,43 +284,27 @@ async function renderPage(n){
 
 function applyZoomCSS(){
   document.querySelectorAll(".page-holder").forEach(h=>{
-    h.style.transform=`scale(${S.zoom})`;
-    h.style.marginBottom=(20*S.zoom)+"px";
+    h.style.transform=`scale(${S.zoom})`;h.style.marginBottom=(20*S.zoom)+"px";
   });
 }
 
-// ✅ SEJDA-STYLE PERFECT EDITING
 function activateText(el){
-  if(S.activeText && S.activeText!==el){
-    S.activeText.contentEditable="false";
-    S.activeText.classList.remove("editing");
-    const page=Number(S.activeText.dataset.page);const index=Number(S.activeText.dataset.index);const ps=S.pages[page-1];
-    const obj=ps.texts.find(t=>t.index===index);
-    S.activeText.style.color = (obj && obj.text) ? "#000000" : "transparent";
+  if(S.activeText&&S.activeText!==el){
+    S.activeText.contentEditable="false";S.activeText.classList.remove("editing");
+    const pageNum=Number(S.activeText.dataset.page);const idx=Number(S.activeText.dataset.index);
+    const pageData=S.pages[pageNum-1];const obj=pageData.texts.find(t=>t.index===idx);
+    S.activeText.style.color=(obj&&obj.text)?"#000000":"transparent";
   }
-  S.activeText=el;
-  el.contentEditable="true";
-  el.classList.add("editing");
-  el.style.color="#000000";
-  el.focus();
-  
-  // ✅ CURSOR AT END OF TEXT
+  S.activeText=el;el.contentEditable="true";el.classList.add("editing");el.style.color="#000000";el.focus();
   setTimeout(()=>{
-    try{
-      const range=document.createRange();
-      range.selectNodeContents(el);
-      range.collapse(false);
-      const sel=window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }catch(e){}
+    try{const range=document.createRange();range.selectNodeContents(el);range.collapse(false);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);}catch(e){}
   },10);
 }
 
 function saveExistingText(el){
-  const page=Number(el.dataset.page);const index=Number(el.dataset.index);const ps=S.pages[page-1];
-  let obj=ps.texts.find(t=>t.index===index);
-  if(!obj){pushHistory();obj={index,text:"",font:"Arial",size:12};ps.texts.push(obj);}
+  const pageNum=Number(el.dataset.page);const idx=Number(el.dataset.index);const pageData=S.pages[pageNum-1];
+  let obj=pageData.texts.find(t=>t.index===idx);
+  if(!obj){pushHistory();obj={index:idx,text:"",font:"Arial",size:12};pageData.texts.push(obj);}
   obj.text=el.innerText.replace(/\n/g,"");obj.font=S.currentFont;obj.size=S.currentSize;
 }
 
@@ -382,7 +349,7 @@ function createImage(holder,n,obj){
   function startResize(e,pos){
     pushHistory();const sx=e.clientX,sy=e.clientY,ox=obj.x,oy=obj.y,ow=obj.width,oh=obj.height;
     function move(ev){
-      const dx=(ev.clientX-sx)/S.zoom,dy=(ev.clientY-sy)/S.zoom;
+      const dx=(ev.clientX-sx)/S.zoom;const dy=(ev.clientY-sy)/S.zoom;
       if(pos==='br'){obj.width=Math.max(30,ow+dx);obj.height=Math.max(30,oh+dy);}
       else if(pos==='tl'){const nw=Math.max(30,ow-dx);const nh=Math.max(30,oh-dy);obj.x=ox+ow-nw;obj.y=oy+oh-nh;obj.width=nw;obj.height=nh;}
       else if(pos==='tr'){obj.width=Math.max(30,ow+dx);const nh=Math.max(30,oh-dy);obj.y=oy+oh-nh;obj.height=nh;}
@@ -398,6 +365,7 @@ function createImage(holder,n,obj){
 
 $("undoBtn").addEventListener("click",()=>{if(!S.history.length){toast("Nothing to undo");return;}S.future.push(snapshot());const previous=S.history.pop();S.pages=previous.pages;S.rotation=previous.rotation;updateTextLayers();toast("Undone");});
 $("redoBtn").addEventListener("click",()=>{if(!S.future.length){toast("Nothing to redo");return;}S.history.push(snapshot());const next=S.future.pop();S.pages=next.pages;S.rotation=next.rotation;updateTextLayers();toast("Redone");});
+
 function updateTextLayers(){
   document.querySelectorAll(".page-holder").forEach(holder=>{
     const n=Number(holder.dataset.page);const ps=S.pages[n-1];
@@ -414,7 +382,15 @@ function updateTextLayers(){
 $("rotateBtn").addEventListener("click",()=>{if(!S.pdf){toast("Open a PDF first");return;}pushHistory();S.rotation=(S.rotation+90)%360;renderAll();toast("Rotated 90°");});
 function setZoom(z){z=Math.max(0.5,Math.min(3,z));S.zoom=z;applyZoomCSS();$("zoomValue").textContent=Math.round(z*100)+"%";}
 $("zoomIn").addEventListener("click",()=>setZoom(S.zoom+0.1));$("zoomOut").addEventListener("click",()=>setZoom(S.zoom-0.1));
-document.addEventListener("keydown",e=>{if(e.key!=="Delete"&&e.key!=="Backspace")return;const active=document.activeElement;if(active&&(active.isContentEditable||active.tagName==="INPUT"||active.tagName==="TEXTAREA"))return;if(!S.selectedImage)return;const id=S.selectedImage.dataset.imageId;for(const ps of S.pages){const i=ps.images.findIndex(x=>x.id===id);if(i!==-1){pushHistory();ps.images.splice(i,1);S.selectedImage=null;updateTextLayers();toast("Image deleted");return;}}});
+
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Delete"&&e.key!=="Backspace")return;
+  const active=document.activeElement;
+  if(active&&(active.isContentEditable||active.tagName==="INPUT"||active.tagName==="TEXTAREA"))return;
+  if(!S.selectedImage)return;
+  const id=S.selectedImage.dataset.imageId;
+  for(const ps of S.pages){const i=ps.images.findIndex(x=>x.id===id);if(i!==-1){pushHistory();ps.images.splice(i,1);S.selectedImage=null;updateTextLayers();toast("Image deleted");return;}}
+});
 
 $("saveBtn").addEventListener("click",()=>{$("saveMenu").classList.toggle("show");});
 document.addEventListener("click",e=>{if(!e.target.closest("#saveBtn")&&!e.target.closest("#saveMenu")){$("saveMenu").classList.remove("show");}});
@@ -438,7 +414,7 @@ async function saveAsJPG(){
 async function saveAsWord(){
   if(!S.pdf){toast("Open a PDF first");return;}const btn=$("saveBtn");const old=btn.innerHTML;
   try{
-    btn.disabled=true;btn.innerHTML=" Building...";status("Building Word...");let bodyHtml="";
+    btn.disabled=true;btn.innerHTML="⏳ Building...";status("Building Word...");let bodyHtml="";
     for(let p=0;p<S.pages.length;p++){
       const pdfjsPage=await S.pdf.getPage(p+1);const viewport=pdfjsPage.getViewport({scale:1,rotation:0});const w=viewport.width;const h=viewport.height;
       bodyHtml+='<div style="position:relative;width:'+w+'pt;height:'+h+'pt;margin:0 0 24pt 0;border:1px solid #ccc;page-break-after:always;">';
