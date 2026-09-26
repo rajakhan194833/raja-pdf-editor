@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Redwan PDF Editor</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Amiri&family=Cairo:wght@400;700&family=Hind+Siliguri:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Roboto:wght@400;700&family=Lato:wght@400;700&family=Poppins:wght@400;700&family=Playfair+Display:wght@400;700&family=Oswald:wght@400;700&family=Raleway:wght@400;700&family=Merriweather:wght@400;700&family=Nunito:wght@400;700&family=Ubuntu:wght@400;700&family=PT+Sans:wght@400;700&family=Bebas+Neue&family=Source+Sans+3:wght@400;700&family=Libre+Baskerville&family=Libre+Franklin:wght@400;700&family=EB+Garamond&family=Questrial&family=Comic+Neue:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Serif+Bengali:wght@400;700&family=Hind+Siliguri:wght@400;700&family=Tiro+Bangla&family=Mukta:wght@400;700&family=Baloo+Da+2:wght@400;700&family=Galada&family=Atma:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Amiri&family=Cairo:wght@400;700&family=Tajawal:wght@400;700&family=Almarai:wght@400;700&family=Lateef&family=Scheherazade+New:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
@@ -40,38 +40,41 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
 .page-canvas{display:block;background:#fff}
 .text-layer,.object-layer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 
-/* ✅ SEJDA.COM EXACT STYLE */
+/* ✅ SEJDA.COM STYLE - PERFECT TEXT BOXES */
 .pdf-text{
   position:absolute;
   pointer-events:auto;
   white-space:pre;
-  color:transparent; /* ডিফল্টভাবে অদৃশ্য (PDF ক্যানভাস দেখাবে) */
-  background:transparent; /* কোনো সাদা ব্যাকগ্রাউন্ড নেই */
+  color:transparent;
+  background:transparent;
   border:1px solid transparent;
   margin:0;
-  padding:2px 4px;
-  line-height:1.2;
+  padding:0;
+  line-height:1;
   cursor:text;
-  border-radius:2px;
   outline:none;
-  transition:all 0.15s ease;
+  transition:border-color 0.15s ease;
   user-select:text;
   z-index:10;
+  display:inline-block;
+  min-width:10px;
+  min-height:12px;
 }
 .pdf-text:hover{
-  border:1px dashed #2563eb !important; /* মাউস নিলে (cursor রাখলে) শুধু বক্স আসবে */
-  background:rgba(37,99,235,0.08) !important;
+  border:1.5px dashed rgba(37,99,235,0.7) !important;
+  background:rgba(37,99,235,0.05) !important;
 }
 .pdf-text.editing{
-  color:#000000 !important; /* ক্লিক করলে টেক্সট একদম ক্লিয়ার কালো দেখাবে */
-  background:transparent !important; /* ব্যাকগ্রাউন্ড ট্রান্সপারেন্টই থাকবে */
-  border:1px solid #2563eb !important; /* ক্লিক করলে সলিড নীল বর্ডার */
+  color:#000000 !important;
+  background:transparent !important;
+  border:1.5px solid #2563eb !important;
   z-index:100 !important;
-  padding:2px 4px !important;
+  padding:0 !important;
   caret-color:#000;
+  cursor:text;
 }
 
-.new-text{position:absolute;z-index:60;min-width:60px;min-height:24px;padding:2px 4px;background:transparent;border:1px solid #2563eb;border-radius:2px;outline:2px solid rgba(37,99,235,0.15);white-space:pre-wrap;cursor:text;color:#111827}
+.new-text{position:absolute;z-index:60;min-width:60px;min-height:24px;padding:2px 4px;background:transparent;border:1.5px solid #2563eb;outline:none;white-space:pre-wrap;cursor:text;color:#111827}
 .image-object{position:absolute;z-index:70;border:2px dashed transparent;cursor:move;user-select:none}
 .image-object:hover{border-color:rgba(147,51,234,0.5)}
 .image-object.selected{border:2px solid #9333ea}
@@ -95,23 +98,12 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
 <div class="toolbar-wrap">
   <div class="toolbar">
     <label class="tool add">📂 Add File<input id="fileInput" hidden type="file" accept=".pdf"></label>
-    <label class="tool image">🖼️ Image<input id="imageInput" hidden type="file" accept="image/*"></label>
-    <button class="tool undo" id="undoBtn">↶ Undo</button>
+    <label class="tool image">️ Image<input id="imageInput" hidden type="file" accept="image/*"></label>
+    <button class="tool undo" id="undoBtn"> Undo</button>
     <button class="tool redo" id="redoBtn">↷ Redo</button>
     <button class="tool rotate" id="rotateBtn">⟳ Rotate</button>
-    <select class="tool fontbox" id="fontSelect">
-      <option value="Arial">Arial</option>
-      <option value="Times New Roman">Times New Roman</option>
-      <option value="Noto Sans Bengali">Noto Sans Bengali</option>
-      <option value="Hind Siliguri">Hind Siliguri</option>
-      <option value="Noto Sans Arabic">Noto Sans Arabic</option>
-      <option value="Amiri">Amiri</option>
-    </select>
-    <select class="tool sizebox" id="sizeSelect">
-      <option value="8">8</option><option value="10">10</option><option value="12" selected>12</option>
-      <option value="14">14</option><option value="16">16</option><option value="18">18</option>
-      <option value="24">24</option><option value="32">32</option><option value="48">48</option>
-    </select>
+    <select class="tool fontbox" id="fontSelect"></select>
+    <select class="tool sizebox" id="sizeSelect"></select>
     <div class="zoom-group">
       <button class="zoom-icon-btn" id="zoomOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button>
       <div class="zoom-percent" id="zoomValue">100%</div>
@@ -123,7 +115,7 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
 <div class="save-menu" id="saveMenu">
   <button class="pdf" onclick="saveAs('pdf')">💾 Save PDF</button>
   <button class="word" onclick="saveAs('word')">📄 Save Word</button>
-  <button class="jpg" onclick="saveAs('jpg')">🖼️ Save JPG</button>
+  <button class="jpg" onclick="saveAs('jpg')">️ Save JPG</button>
 </div>
 <main class="workspace">
   <div class="empty" id="emptyState"><div class="empty-card"><div class="empty-icon">📄</div><h2>Free Edit your PDF</h2><p>Click <b>📂 Add File</b> to open your PDF.</p></div></div>
@@ -141,6 +133,95 @@ function clone(obj){return JSON.parse(JSON.stringify(obj));}
 function snapshot(){return clone({pages:S.pages,rotation:S.rotation});}
 function pushHistory(){S.history.push(snapshot());if(S.history.length>30)S.history.shift();S.future=[];}
 
+// ✅ 50+ FONTS - COMPLETE LIST
+const FONT_LIST=[
+  {cat:"— MS Office —",name:"Arial",css:"'Arial','Helvetica',sans-serif"},
+  {cat:"MS Office",name:"Times New Roman",css:"'Times New Roman','Times',serif"},
+  {cat:"MS Office",name:"Calibri",css:"'Open Sans','Arial',sans-serif"},
+  {cat:"MS Office",name:"Cambria",css:"'Merriweather','Georgia',serif"},
+  {cat:"MS Office",name:"Georgia",css:"'Georgia',serif"},
+  {cat:"MS Office",name:"Verdana",css:"'Verdana',sans-serif"},
+  {cat:"MS Office",name:"Tahoma",css:"'Tahoma',sans-serif"},
+  {cat:"MS Office",name:"Trebuchet MS",css:"'Trebuchet MS',sans-serif"},
+  {cat:"MS Office",name:"Comic Sans MS",css:"'Comic Neue','Comic Sans MS',cursive"},
+  {cat:"MS Office",name:"Impact",css:"'Impact',sans-serif"},
+  {cat:"MS Office",name:"Courier New",css:"'Courier New',monospace"},
+  {cat:"MS Office",name:"Garamond",css:"'EB Garamond','Garamond',serif"},
+  {cat:"MS Office",name:"Palatino",css:"'Palatino Linotype',serif"},
+  {cat:"MS Office",name:"Century Gothic",css:"'Questrial',sans-serif"},
+  {cat:"MS Office",name:"Franklin Gothic",css:"'Libre Franklin',sans-serif"},
+  {cat:"MS Office",name:"Segoe UI",css:"'Open Sans',sans-serif"},
+  {cat:"— Canva Popular —",name:"Montserrat",css:"'Montserrat',sans-serif"},
+  {cat:"Canva",name:"Roboto",css:"'Roboto',sans-serif"},
+  {cat:"Canva",name:"Lato",css:"'Lato',sans-serif"},
+  {cat:"Canva",name:"Poppins",css:"'Poppins',sans-serif"},
+  {cat:"Canva",name:"Playfair Display",css:"'Playfair Display',serif"},
+  {cat:"Canva",name:"Oswald",css:"'Oswald',sans-serif"},
+  {cat:"Canva",name:"Raleway",css:"'Raleway',sans-serif"},
+  {cat:"Canva",name:"Merriweather",css:"'Merriweather',serif"},
+  {cat:"Canva",name:"Nunito",css:"'Nunito',sans-serif"},
+  {cat:"Canva",name:"Ubuntu",css:"'Ubuntu',sans-serif"},
+  {cat:"Canva",name:"PT Sans",css:"'PT Sans',sans-serif"},
+  {cat:"Canva",name:"Bebas Neue",css:"'Bebas Neue',sans-serif"},
+  {cat:"Canva",name:"Source Sans 3",css:"'Source Sans 3',sans-serif"},
+  {cat:"Canva",name:"Libre Baskerville",css:"'Libre Baskerville',serif"},
+  {cat:"Canva",name:"Libre Franklin",css:"'Libre Franklin',sans-serif"},
+  {cat:"Canva",name:"EB Garamond",css:"'EB Garamond',serif"},
+  {cat:"Canva",name:"Questrial",css:"'Questrial',sans-serif"},
+  {cat:"Canva",name:"Comic Neue",css:"'Comic Neue',cursive"},
+  {cat:"— বাংলা —",name:"Noto Sans Bengali",css:"'Noto Sans Bengali',sans-serif"},
+  {cat:"বাংলা",name:"Noto Serif Bengali",css:"'Noto Serif Bengali',serif"},
+  {cat:"বাংলা",name:"Hind Siliguri",css:"'Hind Siliguri',sans-serif"},
+  {cat:"বাংলা",name:"Tiro Bangla",css:"'Tiro Bangla',serif"},
+  {cat:"বাংলা",name:"Mukta",css:"'Mukta',sans-serif"},
+  {cat:"বাংলা",name:"Baloo Da 2",css:"'Baloo Da 2',sans-serif"},
+  {cat:"বাংলা",name:"Galada",css:"'Galada',display"},
+  {cat:"বাংলা",name:"Atma",css:"'Atma',display"},
+  {cat:"বাংলা",name:"SolaimanLipi",css:"'Noto Sans Bengali',sans-serif"},
+  {cat:"বাংলা",name:"Kalpurush",css:"'Noto Sans Bengali',sans-serif"},
+  {cat:"বাংলা",name:"Siyam Rupali",css:"'Noto Serif Bengali',serif"},
+  {cat:"বাংলা",name:"Rupali",css:"'Noto Serif Bengali',serif"},
+  {cat:"— العربية —",name:"Noto Sans Arabic",css:"'Noto Sans Arabic',sans-serif"},
+  {cat:"Arabic",name:"Noto Naskh Arabic",css:"'Noto Naskh Arabic',serif"},
+  {cat:"Arabic",name:"Amiri",css:"'Amiri',serif"},
+  {cat:"Arabic",name:"Cairo",css:"'Cairo',sans-serif"},
+  {cat:"Arabic",name:"Tajawal",css:"'Tajawal',sans-serif"},
+  {cat:"Arabic",name:"Almarai",css:"'Almarai',sans-serif"},
+  {cat:"Arabic",name:"Lateef",css:"'Lateef',serif"},
+  {cat:"Arabic",name:"Scheherazade New",css:"'Scheherazade New',serif"},
+  {cat:"Arabic",name:"IBM Plex Sans Arabic",css:"'IBM Plex Sans Arabic',sans-serif"}
+];
+
+function buildFontSelect(){
+  const sel=$("fontSelect");sel.innerHTML="";let lastCat="";
+  FONT_LIST.forEach(f=>{
+    if(f.cat!==lastCat){const grp=document.createElement("optgroup");grp.label=f.cat;sel.appendChild(grp);lastCat=f.cat;}
+    const opt=document.createElement("option");opt.value=f.name;opt.textContent=f.name;opt.style.fontFamily=f.css;
+    if(f.name===S.currentFont)opt.selected=true;
+    sel.lastElementChild.appendChild(opt);
+  });
+}
+buildFontSelect();
+
+function buildSizeSelect(){
+  const sel=$("sizeSelect");sel.innerHTML="";
+  [8,9,10,11,12,13,14,15,16,17,18,20,22,24,26,28,30,32,36,40,44,48,52,56,60,64,68,72].forEach(s=>{
+    const opt=document.createElement("option");opt.value=s;opt.textContent=s+"px";
+    if(s===S.currentSize)opt.selected=true;sel.appendChild(opt);
+  });
+}
+buildSizeSelect();
+
+$("fontSelect").addEventListener("change",()=>{
+  S.currentFont=$("fontSelect").value;
+  const f=FONT_LIST.find(x=>x.name===S.currentFont);
+  if(S.activeText){pushHistory();S.activeText.style.fontFamily=f?f.css:S.currentFont;saveExistingText(S.activeText);}
+});
+$("sizeSelect").addEventListener("change",()=>{
+  S.currentSize=Number($("sizeSelect").value);
+  if(S.activeText){pushHistory();S.activeText.style.fontSize=S.currentSize*S.zoom+"px";saveExistingText(S.activeText);}
+});
+
 $("fileInput").addEventListener("change",async e=>{
   const file=e.target.files[0];if(!file)return;
   if(!file.name.toLowerCase().endsWith(".pdf")){toast("Please choose a PDF file");return;}
@@ -150,7 +231,7 @@ $("fileInput").addEventListener("change",async e=>{
     S.pdf=await pdfjsLib.getDocument({data:S.originalBytes.slice()}).promise;
     S.pages=[];S.history=[];S.future=[];S.rotation=0;S.zoom=1;S.pageTextCache={};
     for(let i=0;i<S.pdf.numPages;i++)S.pages.push({texts:[],newTexts:[],images:[]});
-    emptyState.style.display="none";await renderAll();status("PDF loaded");toast("PDF opened");
+    emptyState.style.display="none";await renderAll();status("PDF loaded");toast("PDF opened - Click any text to edit");
   }catch(err){console.error(err);status("Ready");toast("PDF could not be opened");}
 });
 
@@ -180,10 +261,16 @@ async function renderPage(n){
     const el=document.createElement("div");
     el.className="pdf-text";el.dataset.page=n;el.dataset.index=index;
     el.textContent=edited?edited.text:item.str;
-    el.style.left=(x*S.zoom)+"px";el.style.top=(y*S.zoom-rawSize*S.zoom)+"px";
+    // ✅ PROPER POSITIONING - text baseline aligned
+    el.style.left=(x*S.zoom)+"px";
+    el.style.top=(y*S.zoom-rawSize*S.zoom*0.85)+"px";
     el.style.fontSize=(edited?.size||rawSize)*S.zoom+"px";
     el.style.fontFamily=(edited?.font||"Arial")+",sans-serif";
-    el.style.minWidth=(item.width||20)*S.zoom+"px";el.style.minHeight=rawSize*S.zoom+"px";
+    // ✅ PROPER WIDTH - based on actual text metrics
+    const textWidth=(item.width||item.str.length*rawSize*0.6)*S.zoom;
+    el.style.width=Math.max(textWidth,20)+"px";
+    el.style.height=(rawSize*S.zoom*1.2)+"px";
+    el.style.lineHeight=(rawSize*S.zoom*1.2)+"px";
     el.contentEditable="false";
     
     el.addEventListener("click",function(e){e.stopPropagation();activateText(this);});
@@ -219,6 +306,7 @@ function applyZoomCSS(){
   });
 }
 
+// ✅ SEJDA-STYLE PERFECT EDITING
 function activateText(el){
   if(S.activeText && S.activeText!==el){
     S.activeText.contentEditable="false";
@@ -230,14 +318,15 @@ function activateText(el){
   S.activeText=el;
   el.contentEditable="true";
   el.classList.add("editing");
-  el.style.color="#000000"; // ক্লিক করলে সাথে সাথে ক্লিয়ার কালো দেখাবে
+  el.style.color="#000000";
   el.focus();
   
+  // ✅ CURSOR AT END OF TEXT
   setTimeout(()=>{
     try{
       const range=document.createRange();
       range.selectNodeContents(el);
-      range.collapse(false); // কার্সর একদম শেষে
+      range.collapse(false);
       const sel=window.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
@@ -255,16 +344,14 @@ function saveExistingText(el){
 function createNewText(holder,n,obj){
   const el=document.createElement("div");el.className="new-text";el.dataset.newId=obj.id;el.contentEditable="true";el.textContent=obj.text||"";
   el.style.left=obj.x*S.zoom+"px";el.style.top=obj.y*S.zoom+"px";
-  el.style.fontFamily=obj.font+",sans-serif";el.style.fontSize=(obj.size||12)*S.zoom+"px";
+  const ef=FONT_LIST.find(f=>f.name===obj.font);el.style.fontFamily=ef?ef.css:obj.font;
+  el.style.fontSize=(obj.size||12)*S.zoom+"px";
   el.addEventListener("input",()=>{obj.text=el.innerText;});
   el.addEventListener("focus",()=>{S.activeText=el;});
   el.addEventListener("blur",()=>{el.classList.remove("editing");});
   el.addEventListener("keydown",e=>{if(e.key==="Escape")el.blur();});
   holder.querySelector(".object-layer").appendChild(el);
 }
-
-$("fontSelect").addEventListener("change",()=>{S.currentFont=$("fontSelect").value;if(S.activeText){pushHistory();S.activeText.style.fontFamily=S.currentFont+",sans-serif";saveExistingText(S.activeText);}});
-$("sizeSelect").addEventListener("change",()=>{S.currentSize=Number($("sizeSelect").value);if(S.activeText){pushHistory();S.activeText.style.fontSize=S.currentSize*S.zoom+"px";saveExistingText(S.activeText);}});
 
 $("imageInput").addEventListener("change",async e=>{
   const file=e.target.files[0];if(!file||!S.pdf){toast("Open a PDF first");return;}
@@ -316,7 +403,7 @@ function updateTextLayers(){
     const n=Number(holder.dataset.page);const ps=S.pages[n-1];
     holder.querySelectorAll(".pdf-text").forEach(el=>{
       const idx=Number(el.dataset.index);const edited=ps.texts.find(t=>t.index===idx);
-      if(edited){el.textContent=edited.text;el.style.fontFamily=edited.font+",sans-serif";el.style.fontSize=edited.size*S.zoom+"px";}
+      if(edited){el.textContent=edited.text;el.style.fontFamily=(FONT_LIST.find(f=>f.name===edited.font)||{css:"Arial"}).css;el.style.fontSize=edited.size*S.zoom+"px";}
     });
     holder.querySelectorAll(".new-text,.image-object").forEach(el=>el.remove());
     ps.newTexts.forEach(obj=>createNewText(holder,n,obj));
@@ -351,7 +438,7 @@ async function saveAsJPG(){
 async function saveAsWord(){
   if(!S.pdf){toast("Open a PDF first");return;}const btn=$("saveBtn");const old=btn.innerHTML;
   try{
-    btn.disabled=true;btn.innerHTML="⏳ Building...";status("Building Word...");let bodyHtml="";
+    btn.disabled=true;btn.innerHTML=" Building...";status("Building Word...");let bodyHtml="";
     for(let p=0;p<S.pages.length;p++){
       const pdfjsPage=await S.pdf.getPage(p+1);const viewport=pdfjsPage.getViewport({scale:1,rotation:0});const w=viewport.width;const h=viewport.height;
       bodyHtml+='<div style="position:relative;width:'+w+'pt;height:'+h+'pt;margin:0 0 24pt 0;border:1px solid #ccc;page-break-after:always;">';
