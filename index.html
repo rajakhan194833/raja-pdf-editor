@@ -37,7 +37,7 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
 .page-canvas{display:block;background:#fff}
 .text-layer,.object-layer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 
-/* ✅ SEJDA STYLE TEXT BOX */
+/* ✅ PERFECT SEJDA-STYLE TEXT BOX (Bottom-aligned for PDF accuracy) */
 .pdf-text{
   position:absolute;
   pointer-events:auto;
@@ -46,14 +46,13 @@ select.tool{appearance:auto;cursor:pointer;text-align:left}
   background:transparent;
   border:1px solid transparent;
   margin:0;
-  padding:0 2px;
-  line-height:1.2;
+  padding:0;
+  line-height:1;
   cursor:text;
   outline:none;
   transition:all 0.15s ease;
   user-select:text;
   z-index:10;
-  display:block;
 }
 .pdf-text:hover{
   border:1.5px dashed rgba(37,99,235,0.7) !important;
@@ -122,7 +121,6 @@ function clone(obj){return JSON.parse(JSON.stringify(obj));}
 function snapshot(){return clone({pages:S.pages,rotation:S.rotation});}
 function pushHistory(){S.history.push(snapshot());if(S.history.length>30)S.history.shift();S.future=[];}
 
-// ✅ FIXED FONT LIST (No Duplicates)
 const FONT_LIST=[
   {cat:"MS Office",name:"Arial",css:"'Arial',sans-serif"},
   {cat:"MS Office",name:"Times New Roman",css:"'Times New Roman',serif"},
@@ -244,9 +242,9 @@ async function renderPage(n){
     el.className="pdf-text";el.dataset.page=n;el.dataset.index=index;
     el.textContent=edited?edited.text:item.str;
     
-    // ✅ FIXED Y-AXIS POSITIONING (PDF bottom-up to HTML top-down)
+    // ✅ PERFECT ALIGNMENT: Using 'bottom' instead of 'top' matches PDF baseline exactly
     el.style.left=(x*S.zoom)+"px";
-    el.style.top=((view.height - y - rawSize)*S.zoom)+"px";
+    el.style.bottom=((view.height - y)*S.zoom)+"px";
     
     el.style.fontSize=(edited?.size||rawSize)*S.zoom+"px";
     el.style.fontFamily=(edited?.font||"Arial")+",sans-serif";
@@ -254,7 +252,6 @@ async function renderPage(n){
     const textLength=item.str.length;
     const estimatedWidth=textLength*(edited?.size||rawSize)*0.6*S.zoom;
     el.style.width=Math.max(estimatedWidth,30)+"px";
-    el.style.height=(edited?.size||rawSize)*S.zoom*1.3+"px";
     
     el.contentEditable="false";
     el.addEventListener("click",function(e){e.stopPropagation();activateText(this);});
@@ -310,7 +307,7 @@ function saveExistingText(el){
 
 function createNewText(holder,n,obj){
   const el=document.createElement("div");el.className="new-text";el.dataset.newId=obj.id;el.contentEditable="true";el.textContent=obj.text||"";
-  el.style.left=obj.x*S.zoom+"px";el.style.top=obj.y*S.zoom+"px";
+  el.style.left=obj.x*S.zoom+"px";el.style.bottom=(holder.offsetHeight - (obj.y + (obj.size||12)))*S.zoom + "px";
   const ef=FONT_LIST.find(f=>f.name===obj.font);el.style.fontFamily=ef?ef.css:obj.font;
   el.style.fontSize=(obj.size||12)*S.zoom+"px";
   el.addEventListener("input",()=>{obj.text=el.innerText;});
@@ -330,7 +327,7 @@ $("imageInput").addEventListener("change",async e=>{
 
 function createImage(holder,n,obj){
   const box=document.createElement("div");box.className="image-object";box.dataset.imageId=obj.id;
-  box.style.left=obj.x*S.zoom+"px";box.style.top=obj.y*S.zoom+"px";
+  box.style.left=obj.x*S.zoom+"px";box.style.bottom=(holder.offsetHeight - (obj.y + obj.height))*S.zoom + "px";
   box.style.width=obj.width*S.zoom+"px";box.style.height=obj.height*S.zoom+"px";
   const img=document.createElement("img");img.src=obj.src;img.draggable=false;box.appendChild(img);
   ['tl','tr','bl','br'].forEach(pos=>{
@@ -342,7 +339,7 @@ function createImage(holder,n,obj){
     document.querySelectorAll(".image-object").forEach(x=>x.classList.remove("selected"));
     box.classList.add("selected");S.selectedImage=box;
     const sx=e.clientX,sy=e.clientY,ox=obj.x,oy=obj.y;
-    function move(ev){obj.x=ox+(ev.clientX-sx)/S.zoom;obj.y=oy+(ev.clientY-sy)/S.zoom;box.style.left=obj.x*S.zoom+"px";box.style.top=obj.y*S.zoom+"px";}
+    function move(ev){obj.x=ox+(ev.clientX-sx)/S.zoom;obj.y=oy+(ev.clientY-sy)/S.zoom;box.style.left=obj.x*S.zoom+"px";box.style.bottom=(holder.offsetHeight - (obj.y + obj.height))*S.zoom + "px";}
     function up(){document.removeEventListener("mousemove",move);document.removeEventListener("mouseup",up);}
     document.addEventListener("mousemove",move);document.addEventListener("mouseup",up);
   });
@@ -354,7 +351,7 @@ function createImage(holder,n,obj){
       else if(pos==='tl'){const nw=Math.max(30,ow-dx);const nh=Math.max(30,oh-dy);obj.x=ox+ow-nw;obj.y=oy+oh-nh;obj.width=nw;obj.height=nh;}
       else if(pos==='tr'){obj.width=Math.max(30,ow+dx);const nh=Math.max(30,oh-dy);obj.y=oy+oh-nh;obj.height=nh;}
       else if(pos==='bl'){const nw=Math.max(30,ow-dx);obj.x=ox+ow-nw;obj.width=nw;obj.height=Math.max(30,oh+dy);}
-      box.style.left=obj.x*S.zoom+"px";box.style.top=obj.y*S.zoom+"px";
+      box.style.left=obj.x*S.zoom+"px";box.style.bottom=(holder.offsetHeight - (obj.y + obj.height))*S.zoom + "px";
       box.style.width=obj.width*S.zoom+"px";box.style.height=obj.height*S.zoom+"px";
     }
     function up(){document.removeEventListener("mousemove",move);document.removeEventListener("mouseup",up);}
